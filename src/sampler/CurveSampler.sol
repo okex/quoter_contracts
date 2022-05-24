@@ -235,13 +235,15 @@ contract CurveSampler {
         } catch {
             int128 _fromTokenIdx = int128(int256(fromTokenIdx));
             int128 _toTokenIdx = int128(int256(toTokenIdx));
-            try CurvePool(poolAddress).get_dy(
-                _fromTokenIdx,
-                _toTokenIdx,
-                sellAmount
-            )returns(uint256 amount){
+            try
+                CurvePool(poolAddress).get_dy(
+                    _fromTokenIdx,
+                    _toTokenIdx,
+                    sellAmount
+                )
+            returns (uint256 amount) {
                 buyAmount = amount;
-            }catch(bytes memory){
+            } catch (bytes memory) {
                 buyAmount = 0;
             }
         }
@@ -265,13 +267,14 @@ contract CurveSampler {
             int128 _fromTokenIdx = int128(int256(fromTokenIdx));
             int128 _toTokenIdx = int128(int256(toTokenIdx));
             try
-            CurvePool(poolAddress).get_dy_underlying(
-                _fromTokenIdx,
-                _toTokenIdx,
-                sellAmount
-            )returns(uint256 amount){
+                CurvePool(poolAddress).get_dy_underlying(
+                    _fromTokenIdx,
+                    _toTokenIdx,
+                    sellAmount
+                )
+            returns (uint256 amount) {
                 buyAmount = amount;
-            }catch(bytes memory){
+            } catch (bytes memory) {
                 buyAmount = 0;
             }
         }

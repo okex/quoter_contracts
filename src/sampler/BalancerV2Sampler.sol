@@ -55,8 +55,8 @@ interface IAsset {
     // solhint-disable-previous-line no-empty-blocks
 }
 
-interface IPool{
-    function getPoolId()external view returns (bytes32);
+interface IPool {
+    function getPoolId() external view returns (bytes32);
 }
 
 contract BalancerV2Sampler {
@@ -73,45 +73,50 @@ contract BalancerV2Sampler {
     /// @return makerTokenAmounts Maker amounts bought at each taker token
     ///         amount.
     function sampleSellsFromBalancerV2(
-          BalancerV2PoolInfo memory poolInfo,
-          address takerToken,
-          address makerToken,
-          uint256[] memory takerTokenAmounts
-      )
-          public
-          returns (uint256[] memory makerTokenAmounts)
-      {
-          IBalancerV2Vault vault = IBalancerV2Vault(poolInfo.vault);
-          IAsset[] memory swapAssets = new IAsset[](2);
-          swapAssets[0] = IAsset(takerToken);
-          swapAssets[1] = IAsset(makerToken);
+        BalancerV2PoolInfo memory poolInfo,
+        address takerToken,
+        address makerToken,
+        uint256[] memory takerTokenAmounts
+    ) public returns (uint256[] memory makerTokenAmounts) {
+        IBalancerV2Vault vault = IBalancerV2Vault(poolInfo.vault);
+        IAsset[] memory swapAssets = new IAsset[](2);
+        swapAssets[0] = IAsset(takerToken);
+        swapAssets[1] = IAsset(makerToken);
 
-          uint256 numSamples = takerTokenAmounts.length;
-          makerTokenAmounts = new uint256[](numSamples);
-          IBalancerV2Vault.FundManagement memory swapFunds =
-              createSwapFunds();
+        uint256 numSamples = takerTokenAmounts.length;
+        makerTokenAmounts = new uint256[](numSamples);
+        IBalancerV2Vault.FundManagement memory swapFunds = createSwapFunds();
 
-          for (uint256 i = 0; i < numSamples; i++) {
-              IBalancerV2Vault.BatchSwapStep[] memory swapSteps =
-                  createSwapSteps(poolInfo, takerTokenAmounts[i]);
+        for (uint256 i = 0; i < numSamples; i++) {
+            IBalancerV2Vault.BatchSwapStep[] memory swapSteps = createSwapSteps(
+                poolInfo,
+                takerTokenAmounts[i]
+            );
 
-              try
-                  // For sells we specify the takerToken which is what the vault will receive from the trade
-                  vault.queryBatchSwap(IBalancerV2Vault.SwapKind.GIVEN_IN, swapSteps, swapAssets, swapFunds)
-              // amounts represent pool balance deltas from the swap (incoming balance, outgoing balance)
-              returns (int256[] memory amounts) {
-                  // Outgoing balance is negative so we need to flip the sign
-                  int256 amountOutFromPool = amounts[1] * -1;
-                  if (amountOutFromPool <= 0) {
-                      break;
-                  }
-                  makerTokenAmounts[i] = uint256(amountOutFromPool);
-              } catch (bytes memory) {
-                  // Swallow failures, leaving all results as zero.
-                  break;
-              }
-          }
-      }
+            try
+                // For sells we specify the takerToken which is what the vault will receive from the trade
+                vault.queryBatchSwap(
+                    IBalancerV2Vault.SwapKind.GIVEN_IN,
+                    swapSteps,
+                    swapAssets,
+                    swapFunds
+                )
+            returns (
+                // amounts represent pool balance deltas from the swap (incoming balance, outgoing balance)
+                int256[] memory amounts
+            ) {
+                // Outgoing balance is negative so we need to flip the sign
+                int256 amountOutFromPool = amounts[1] * -1;
+                if (amountOutFromPool <= 0) {
+                    break;
+                }
+                makerTokenAmounts[i] = uint256(amountOutFromPool);
+            } catch (bytes memory) {
+                // Swallow failures, leaving all results as zero.
+                break;
+            }
+        }
+    }
 
     function createSwapSteps(BalancerV2PoolInfo memory poolInfo, uint256 amount)
         private

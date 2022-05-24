@@ -21,20 +21,17 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 interface IKyberDmmRouter {
-
-    function getAmountsOut(uint256 amountIn, address[] calldata pools, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts);
+    function getAmountsOut(
+        uint256 amountIn,
+        address[] calldata pools,
+        address[] calldata path
+    ) external view returns (uint256[] memory amounts);
 }
 
-
-
-contract KyberDmmSampler
-{
+contract KyberDmmSampler {
     /// @dev Gas limit for KyberDmm calls.
-    uint256 constant private KYBER_DMM_CALL_GAS = 150e3; // 150k
-    struct KyberDmmSamplerOpts{
+    uint256 private constant KYBER_DMM_CALL_GAS = 150e3; // 150k
+    struct KyberDmmSamplerOpts {
         address pool;
         IKyberDmmRouter router;
     }
@@ -49,11 +46,7 @@ contract KyberDmmSampler
         address takerToken,
         address makerToken,
         uint256[] memory takerTokenAmounts
-    )
-        public
-        view
-        returns (uint256[] memory makerTokenAmounts)
-    {
+    ) public view returns (uint256[] memory makerTokenAmounts) {
         uint256 numSamples = takerTokenAmounts.length;
         makerTokenAmounts = new uint256[](numSamples);
         address[] memory pools = new address[](1);
@@ -62,16 +55,19 @@ contract KyberDmmSampler
         path[0] = takerToken;
         path[1] = makerToken;
         for (uint256 i = 0; i < numSamples; i++) {
-              try opts.router.getAmountsOut
-                    {gas: KYBER_DMM_CALL_GAS}
-                    (takerTokenAmounts[i], pools, path)
-                    returns( uint256[] memory amounts){
-                        makerTokenAmounts[i] = amounts[1];
-                    }catch(bytes memory){}
-                // Break early if there are 0 amounts
-                if (makerTokenAmounts[i] == 0) {
-                    break;
-                }
+            try
+                opts.router.getAmountsOut{gas: KYBER_DMM_CALL_GAS}(
+                    takerTokenAmounts[i],
+                    pools,
+                    path
+                )
+            returns (uint256[] memory amounts) {
+                makerTokenAmounts[i] = amounts[1];
+            } catch (bytes memory) {}
+            // Break early if there are 0 amounts
+            if (makerTokenAmounts[i] == 0) {
+                break;
+            }
         }
     }
 }

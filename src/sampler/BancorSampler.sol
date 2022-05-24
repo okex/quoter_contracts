@@ -85,7 +85,6 @@ contract BancorSampler {
         return (bancorNetwork, path, makerTokenAmounts);
     }
 
-
     function _findBestPath(
         BancorSamplerOpts memory opts,
         address takerToken,

@@ -7,9 +7,9 @@ import {console} from "./utils/Console.sol";
 
 import {Vm} from "forge-std/Vm.sol";
 
-import { ERC20BridgeSampler } from "../sampler/ERC20BridgeSampler.sol";
-import { IUniswapV3Quoter, IUniswapV3Pool } from "../sampler/UniswapV3Sampler.sol";
-import { IKyberDmmRouter } from '../sampler/KyberDmmSampler.sol';
+import {ERC20BridgeSampler} from "../sampler/ERC20BridgeSampler.sol";
+import {IUniswapV3Quoter, IUniswapV3Pool} from "../sampler/UniswapV3Sampler.sol";
+import {IKyberDmmRouter} from "../sampler/KyberDmmSampler.sol";
 
 contract SamplerTest is DSTest, ERC20BridgeSampler {
     Vm internal immutable vm = Vm(HEVM_ADDRESS);
@@ -19,8 +19,7 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
     address constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    function setUp() public {
-    }
+    function setUp() public {}
 
     ////////////////////////////////////////////
     /// test curve pools
@@ -72,8 +71,8 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
 
         makerTokenAmounts = sampleSellsFromCurve(
             poolAddress,
-            DAI,// DAI
-            USDC,// USDC
+            DAI, // DAI
+            USDC, // USDC
             takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
@@ -85,7 +84,7 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
         takerTokenAmounts[0] = 1000000000000000000000;
         address poolAddress = 0x4f062658EaAF2C1ccf8C8e36D6824CDf41167956; // metapool pool(gusd)
         // one is meta coin, the other is underlying coin
-        address fromToken =  0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd; // gusd
+        address fromToken = 0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd; // gusd
         address toToken = USDC; // USDC
         uint256[] memory makerTokenAmounts = sampleSellsFromCurve(
             poolAddress,
@@ -98,17 +97,16 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
         // both of two are underlying coins
         makerTokenAmounts = sampleSellsFromCurve(
             poolAddress,
-            DAI,// DAI
-            USDC,// USDC
+            DAI, // DAI
+            USDC, // USDC
             takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
 
-
         // test pools that don't have base_pool function
         makerTokenAmounts = sampleSellsFromCurve(
-            0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1,// tusd pool
-            0x0000000000085d4780B73119b644AE5ecd22b376,// TUSD
+            0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1, // tusd pool
+            0x0000000000085d4780B73119b644AE5ecd22b376, // TUSD
             DAI,
             takerTokenAmounts
         );
@@ -116,29 +114,29 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
 
         // both of two are underlying coins
         makerTokenAmounts = sampleSellsFromCurve(
-            0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1,// tusd pool
-            DAI,// DAI
-            USDC,// USDC
+            0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1, // tusd pool
+            DAI, // DAI
+            USDC, // USDC
             takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testYPool()public{
+    function testYPool() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 1000000000000000000000;
         // coins
         uint256[] memory makerTokenAmounts = sampleSellsFromCurve(
-            0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51,// Y pool
-            0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01,// yDAI
-            0xd6aD7a6750A7593E092a9B218d66C0A814a3436e,// yUSDC
+            0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51, // Y pool
+            0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01, // yDAI
+            0xd6aD7a6750A7593E092a9B218d66C0A814a3436e, // yUSDC
             takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
 
         // underlying coins
         makerTokenAmounts = sampleSellsFromCurve(
-            0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51,// Y pool
+            0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51, // Y pool
             DAI,
             USDC,
             takerTokenAmounts
@@ -146,13 +144,13 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testCryptoFactoryPool()public{
+    function testCryptoFactoryPool() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 1000000000000000000000;
         // coins
         uint256[] memory makerTokenAmounts = sampleSellsFromCurve(
-            0x3211C6cBeF1429da3D0d58494938299C92Ad5860,//  crypto factory pool
-            0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6,// stg
+            0x3211C6cBeF1429da3D0d58494938299C92Ad5860, //  crypto factory pool
+            0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6, // stg
             USDC,
             takerTokenAmounts
         );
@@ -166,35 +164,91 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
         address[] memory path = new address[](2);
         path[0] = DAI;
         path[1] = USDC;
-        uint256[] memory makerTokenAmounts = sampleSellsFromUniswapV2(router, path, takerTokenAmounts);
+        uint256[] memory makerTokenAmounts = sampleSellsFromUniswapV2(
+            router,
+            path,
+            takerTokenAmounts
+        );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testUniswapV3() public{
+    function testUniswapV3() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
-        takerTokenAmounts[0] = 4000000000000000000;
+        uint256[] memory makerTokenAmounts = new uint256[](1);
         address quoter = 0x61fFE014bA17989E743c5F6cB21bF9697530B21e;
         address pool = 0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640;
-        uint256[] memory makerTokenAmounts = sampleSellsFromUniswapV3(UniswapV3SamplerOpts({quoter:IUniswapV3Quoter(quoter), pool: IUniswapV3Pool(pool)}), WETH,USDC, takerTokenAmounts);
-        assertGt(makerTokenAmounts[0], 0);
+
+        takerTokenAmounts[0] = 4000000000000000000;
+        makerTokenAmounts = sampleSellsFromUniswapV3(
+            UniswapV3SamplerOpts({
+                quoter: IUniswapV3Quoter(quoter),
+                pool: IUniswapV3Pool(pool)
+            }),
+            WETH,
+            USDC,
+            takerTokenAmounts
+        );
+        console.log(makerTokenAmounts[0]);
+        // assertGt(makerTokenAmounts[0], 0);
+
+        takerTokenAmounts[0] = 576000000000000000000;
+        pool = 0x11b815efB8f581194ae79006d24E0d814B7697F6;
+        makerTokenAmounts = sampleSellsFromUniswapV3(
+            UniswapV3SamplerOpts({
+                quoter: IUniswapV3Quoter(quoter),
+                pool: IUniswapV3Pool(pool)
+            }),
+            WETH,
+            USDT,
+            takerTokenAmounts
+        );
+        console.log(makerTokenAmounts[0]);
+        // assertEq(makerTokenAmounts[0], 0);
+
+        takerTokenAmounts[0] = 184000000000000000000;
+        pool = 0x60594a405d53811d3BC4766596EFD80fd545A270;
+        makerTokenAmounts = sampleSellsFromUniswapV3(
+            UniswapV3SamplerOpts({
+                quoter: IUniswapV3Quoter(quoter),
+                pool: IUniswapV3Pool(pool)
+            }),
+            WETH,
+            DAI,
+            takerTokenAmounts
+        );
+        console.log(makerTokenAmounts[0]);
+        // assertEq(makerTokenAmounts[0], 0);
+
+        takerTokenAmounts[0] = 234000000000000000000;
+        pool = 0x60594a405d53811d3BC4766596EFD80fd545A270;
+        makerTokenAmounts = sampleSellsFromUniswapV3(
+            UniswapV3SamplerOpts({
+                quoter: IUniswapV3Quoter(quoter),
+                pool: IUniswapV3Pool(pool)
+            }),
+            WETH,
+            DAI,
+            takerTokenAmounts
+        );
+        console.log(makerTokenAmounts[0]);
     }
 
-    function testBalancer()public{
+    function testBalancer() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 1000000000;
         address poolAddress = 0x8a649274E4d777FFC6851F13d23A86BBFA2f2Fbf;
         address takerToken = WETH;
         address makerToken = USDC;
-        uint256[] memory makerTokenAmounts =  sampleSellsFromBalancer(
-        poolAddress,
-        takerToken,
-        makerToken,
-        takerTokenAmounts
+        uint256[] memory makerTokenAmounts = sampleSellsFromBalancer(
+            poolAddress,
+            takerToken,
+            makerToken,
+            takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testBalancerV2()public{
+    function testBalancerV2() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 1000000000;
         address pool = 0x06Df3b2bbB68adc8B0e302443692037ED9f91b42;
@@ -208,68 +262,60 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testDODO()public{
+    function testDODO() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 1000000000;
-        bool sellBase = true;
         address helper = 0x533dA777aeDCE766CEAe696bf90f8541A4bA80Eb;
         address pool = 0xC9f93163c99695c6526b799EbcA2207Fdf7D61aD;
-        uint256[] memory makerTokenAmounts = sampleSellsFromDODO(DODOSamplerOpts({
-            pool: pool,
-            sellBase: sellBase,
-            helper: helper
-        }),
-        USDT,
-        USDC,
-        takerTokenAmounts);
+        uint256[] memory makerTokenAmounts = sampleSellsFromDODO(
+            DODOSamplerOpts({pool: pool, helper: helper}),
+            USDT,
+            USDC,
+            takerTokenAmounts
+        );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testDODOV2()public{
+    function testDODOV2() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 10000000000000000000;
-        bool sellBase = true;
         address pool = 0x3058EF90929cb8180174D74C507176ccA6835D73;
-        uint256[] memory makerTokenAmounts = sampleSellsFromDODOV2(DODOV2SamplerOpts({
-            pool: pool,
-            sellBase: sellBase
-        }),
-        DAI,
-        USDT,
-        takerTokenAmounts);
+        uint256[] memory makerTokenAmounts = sampleSellsFromDODOV2(
+            DODOV2SamplerOpts({pool: pool}),
+            DAI,
+            USDT,
+            takerTokenAmounts
+        );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testMakerPSM()public{
+    function testMakerPSM() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 10000000000000000000;
 
         bytes32 ilkIdentifier = bytes32(abi.encodePacked("PSM-USDC-A"));
 
         uint256[] memory makerTokenAmounts = sampleSellsFromMakerPsm(
-        MakerPsmInfo({
-            psmAddress:0x89B78CfA322F6C5dE0aBcEecab66Aee45393cC5A,
-            ilkIdentifier: ilkIdentifier,
-            gemTokenAddress: USDC
-        }),
-        DAI,
-        USDC,
-        takerTokenAmounts
+            MakerPsmInfo({
+                psmAddress: 0x89B78CfA322F6C5dE0aBcEecab66Aee45393cC5A,
+                ilkIdentifier: ilkIdentifier,
+                gemTokenAddress: USDC
+            }),
+            DAI,
+            USDC,
+            takerTokenAmounts
         );
         assertGt(makerTokenAmounts[0], 0);
     }
 
-    function testKyberDmm()public{
+    function testKyberDmm() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
         takerTokenAmounts[0] = 10000000000000000000;
         address pool = 0xD478953D5572f829f457A5052580cBEaee36c1Aa;
         address router = 0x1c87257F5e8609940Bc751a07BB085Bb7f8cDBE6;
 
         uint256[] memory makerTokenAmounts = sampleSellsFromKyberDmm(
-            KyberDmmSamplerOpts({
-            pool: pool,
-            router: IKyberDmmRouter(router)
-        }),
+            KyberDmmSamplerOpts({pool: pool, router: IKyberDmmRouter(router)}),
             WETH,
             USDC,
             takerTokenAmounts

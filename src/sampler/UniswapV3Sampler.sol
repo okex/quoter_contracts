@@ -28,8 +28,10 @@ interface IUniswapV3Quoter {
         uint24 fee;
         uint160 sqrtPriceLimitX96;
     }
-        function quoteExactInputSingle(QuoteExactInputSingleParams memory params)
-        external returns (
+
+    function quoteExactInputSingle(QuoteExactInputSingleParams memory params)
+        external
+        returns (
             uint256 amountOut,
             uint160 sqrtPriceX96After,
             uint32 initializedTicksCrossed,
@@ -44,7 +46,7 @@ interface IUniswapV3Pool {
 contract UniswapV3Sampler {
     /// @dev Gas limit for UniswapV3 calls. This is 100% a guess.
     uint256 private constant QUOTE_GAS = 300e3;
-    struct UniswapV3SamplerOpts{
+    struct UniswapV3SamplerOpts {
         IUniswapV3Quoter quoter;
         IUniswapV3Pool pool;
     }
@@ -65,17 +67,19 @@ contract UniswapV3Sampler {
         uint24 fee = opts.pool.fee();
         for (uint256 i = 0; i < takerTokenAmounts.length; ++i) {
             // Pick the best result from all the paths.
-            try opts.quoter.quoteExactInputSingle{gas: QUOTE_GAS}(
-                IUniswapV3Quoter.QuoteExactInputSingleParams({
+            try
+                opts.quoter.quoteExactInputSingle{gas: QUOTE_GAS}(
+                    IUniswapV3Quoter.QuoteExactInputSingleParams({
                         tokenIn: takerToken,
                         tokenOut: makerToken,
                         fee: fee,
                         amountIn: takerTokenAmounts[i],
                         sqrtPriceLimitX96: 0
                     })
-            )returns(uint256 amount, uint160, uint32, uint256){
+                )
+            returns (uint256 amount, uint160, uint32, uint256) {
                 makerTokenAmounts[i] = amount;
-            }catch(bytes memory){}
+            } catch (bytes memory) {}
             // Break early if we can't complete the buys.
             if (makerTokenAmounts[i] == 0) {
                 break;

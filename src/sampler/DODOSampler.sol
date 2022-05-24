@@ -38,6 +38,10 @@ interface IDODO {
     function querySellBaseToken(uint256 amount) external view returns (uint256);
 
     function _TRADE_ALLOWED_() external view returns (bool);
+
+    function _BASE_TOKEN_() external view returns (address);
+
+    function _QUOTE_TOKEN_() external view returns (address);
 }
 
 contract DODOSampler {
@@ -45,7 +49,6 @@ contract DODOSampler {
     uint256 private constant DODO_CALL_GAS = 300e3; // 300k
     struct DODOSamplerOpts {
         address pool;
-        bool sellBase;
         address helper;
     }
 
@@ -56,8 +59,8 @@ contract DODOSampler {
     ///         amount.
     function sampleSellsFromDODO(
         DODOSamplerOpts memory opts,
-        address ,
-        address ,
+        address takerToken,
+        address makerToken,
         uint256[] memory takerTokenAmounts
     ) public view returns (uint256[] memory makerTokenAmounts) {
         uint256 numSamples = takerTokenAmounts.length;
@@ -68,26 +71,42 @@ contract DODOSampler {
             return makerTokenAmounts;
         }
 
+        bool sellBase;
+        if (IDODO(opts.pool)._BASE_TOKEN_() == takerToken) {
+            require(
+                IDODO(opts.pool)._QUOTE_TOKEN_() == makerToken,
+                "trade condition check failed"
+            );
+            sellBase = true;
+        } else {
+            require(
+                IDODO(opts.pool)._QUOTE_TOKEN_() == takerToken,
+                "trade condition check failed"
+            );
+            require(
+                IDODO(opts.pool)._BASE_TOKEN_() == makerToken,
+                "trade condition check failed"
+            );
+            sellBase = false;
+        }
+
         for (uint256 i = 0; i < numSamples; i++) {
-            if (opts.sellBase) {
+            if (sellBase) {
                 try
-                IDODO(opts.pool).querySellBaseToken{
-                    gas: DODO_CALL_GAS
-                }(takerTokenAmounts[i])
-                returns(uint256 amount){
+                    IDODO(opts.pool).querySellBaseToken{gas: DODO_CALL_GAS}(
+                        takerTokenAmounts[i]
+                    )
+                returns (uint256 amount) {
                     makerTokenAmounts[i] = amount;
-                }catch(bytes memory ){
-                }
+                } catch (bytes memory) {}
             } else {
                 try
-                IDODOHelper(opts.helper)
-                    .querySellQuoteToken{gas: DODO_CALL_GAS}(
-                    opts.pool,
-                    takerTokenAmounts[i]
-                )returns(uint256 amount){
+                    IDODOHelper(opts.helper).querySellQuoteToken{
+                        gas: DODO_CALL_GAS
+                    }(opts.pool, takerTokenAmounts[i])
+                returns (uint256 amount) {
                     makerTokenAmounts[i] = amount;
-                }catch(bytes memory){
-                }
+                } catch (bytes memory) {}
             }
             // Break early if there are 0 amounts
             if (makerTokenAmounts[i] == 0) {
