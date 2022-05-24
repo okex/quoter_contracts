@@ -64,15 +64,23 @@ contract DODOV2Sampler {
 
         for (uint256 i = 0; i < numSamples; i++) {
             if (opts.sellBase) {
-                (makerTokenAmounts[i], ) = IDODOV2Pool(opts.pool).querySellBase{
+                try
+                IDODOV2Pool(opts.pool).querySellBase{
                     gas: DODO_V2_CALL_GAS
-                }(address(0), takerTokenAmounts[i]);
+                }(address(0), takerTokenAmounts[i])
+                returns(uint256 amount, uint256){
+                    makerTokenAmounts[i] = amount;
+                }catch(bytes memory){
+                }
             } else {
-                (makerTokenAmounts[i], ) = IDODOV2Pool(opts.pool)
+                try IDODOV2Pool(opts.pool)
                     .querySellQuote{gas: DODO_V2_CALL_GAS}(
                     address(0),
                     takerTokenAmounts[i]
-                );
+                )returns(uint256 amount, uint256 ){
+                    makerTokenAmounts[i] = amount;
+                }catch(bytes memory){
+                }
             }
             // Break early if there are 0 amounts
             if (makerTokenAmounts[i] == 0) {

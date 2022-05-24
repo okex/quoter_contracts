@@ -48,38 +48,74 @@ contract BalancerSampler {
     /// @return makerTokenAmounts Maker amounts bought at each taker token
     ///         amount.
     function sampleSellsFromBalancer(
-        address poolAddress,
-        address takerToken,
-        address makerToken,
-        uint256[] memory takerTokenAmounts
-    ) public view returns (uint256[] memory makerTokenAmounts) {
-        IBalancer pool = IBalancer(poolAddress);
-        uint256 numSamples = takerTokenAmounts.length;
-        makerTokenAmounts = new uint256[](numSamples);
-        if (!pool.isBound(takerToken) || !pool.isBound(makerToken)) {
-            return makerTokenAmounts;
-        }
+          address poolAddress,
+          address takerToken,
+          address makerToken,
+          uint256[] memory takerTokenAmounts
+      )
+          public
+          view
+          returns (uint256[] memory makerTokenAmounts)
+      {
+          IBalancer pool = IBalancer(poolAddress);
+          uint256 numSamples = takerTokenAmounts.length;
+          makerTokenAmounts = new uint256[](numSamples);
+          if (!pool.isBound(takerToken) || !pool.isBound(makerToken)) {
+              return makerTokenAmounts;
+          }
 
-        BalancerState memory poolState;
-        poolState.takerTokenBalance = pool.getBalance(takerToken);
-        poolState.makerTokenBalance = pool.getBalance(makerToken);
-        poolState.takerTokenWeight = pool.getDenormalizedWeight(takerToken);
-        poolState.makerTokenWeight = pool.getDenormalizedWeight(makerToken);
-        poolState.swapFee = pool.getSwapFee();
+          BalancerState memory poolState;
+          poolState.takerTokenBalance = pool.getBalance(takerToken);
+          poolState.makerTokenBalance = pool.getBalance(makerToken);
+          poolState.takerTokenWeight = pool.getDenormalizedWeight(takerToken);
+          poolState.makerTokenWeight = pool.getDenormalizedWeight(makerToken);
+          poolState.swapFee = pool.getSwapFee();
 
-        for (uint256 i = 0; i < numSamples; i++) {
-            makerTokenAmounts[i] = pool.calcOutGivenIn{gas: BALANCER_CALL_GAS}(
-                poolState.takerTokenBalance,
-                poolState.takerTokenWeight,
-                poolState.makerTokenBalance,
-                poolState.makerTokenWeight,
-                takerTokenAmounts[i],
-                poolState.swapFee
-            );
-            // Break early if there are 0 amounts
-            if (makerTokenAmounts[i] == 0) {
-                break;
-            }
-        }
-    }
+          for (uint256 i = 0; i < numSamples; i++) {
+              // Handles this revert scenario:
+              // https://github.com/balancer-labs/balancer-core/blob/master/contracts/BPool.sol#L443
+              if (takerTokenAmounts[i] > _bmul(poolState.takerTokenBalance, MAX_IN_RATIO)) {
+                  break;
+              }
+              try
+                  pool.calcOutGivenIn
+                      {gas: BALANCER_CALL_GAS}
+                      (
+                          poolState.takerTokenBalance,
+                          poolState.takerTokenWeight,
+                          poolState.makerTokenBalance,
+                          poolState.makerTokenWeight,
+                          takerTokenAmounts[i],
+                          poolState.swapFee
+                      )
+                  returns (uint256 amount)
+              {
+                  makerTokenAmounts[i] = amount;
+                  // Break early if there are 0 amounts
+                  if (makerTokenAmounts[i] == 0) {
+                      break;
+                  }
+              } catch (bytes memory) {
+                  // Swallow failures, leaving all results as zero.
+                  break;
+              }
+          }
+      }
+    
+    function _bmul(uint256 a, uint256 b)
+          private
+          pure
+          returns (uint256 c)
+      {
+          uint c0 = a * b;
+          if (a != 0 && c0 / a != b) {
+              return 0;
+          }
+          uint c1 = c0 + (BONE / 2);
+          if (c1 < c0) {
+              return 0;
+          }
+          uint c2 = c1 / BONE;
+          return c2;
+      }
 }

@@ -14,16 +14,12 @@ import { IKyberDmmRouter } from '../sampler/KyberDmmSampler.sol';
 contract SamplerTest is DSTest, ERC20BridgeSampler {
     Vm internal immutable vm = Vm(HEVM_ADDRESS);
 
-    Utilities internal utils;
-    address payable[] internal users;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     function setUp() public {
-        utils = new Utilities();
-        users = utils.createUsers(5);
     }
 
     ////////////////////////////////////////////
@@ -165,7 +161,7 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
 
     function testUniswapV2() public {
         uint256[] memory takerTokenAmounts = new uint256[](1);
-        takerTokenAmounts[0] = 100000000000;
+        takerTokenAmounts[0] = 1000000000000000000000;
         address router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
         address[] memory path = new address[](2);
         path[0] = DAI;
@@ -176,10 +172,10 @@ contract SamplerTest is DSTest, ERC20BridgeSampler {
 
     function testUniswapV3() public{
         uint256[] memory takerTokenAmounts = new uint256[](1);
-        takerTokenAmounts[0] = 1000000000;
+        takerTokenAmounts[0] = 4000000000000000000;
         address quoter = 0x61fFE014bA17989E743c5F6cB21bF9697530B21e;
-        address pool = 0x3416cF6C708Da44DB2624D63ea0AAef7113527C6;
-        uint256[] memory makerTokenAmounts = sampleSellsFromUniswapV3(UniswapV3SamplerOpts({quoter:IUniswapV3Quoter(quoter), pool: IUniswapV3Pool(pool)}), USDC,USDT, takerTokenAmounts);
+        address pool = 0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640;
+        uint256[] memory makerTokenAmounts = sampleSellsFromUniswapV3(UniswapV3SamplerOpts({quoter:IUniswapV3Quoter(quoter), pool: IUniswapV3Pool(pool)}), WETH,USDC, takerTokenAmounts);
         assertGt(makerTokenAmounts[0], 0);
     }
 

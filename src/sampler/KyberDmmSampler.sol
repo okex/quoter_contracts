@@ -62,10 +62,12 @@ contract KyberDmmSampler
         path[0] = takerToken;
         path[1] = makerToken;
         for (uint256 i = 0; i < numSamples; i++) {
-              uint256[] memory amounts = opts.router.getAmountsOut
+              try opts.router.getAmountsOut
                     {gas: KYBER_DMM_CALL_GAS}
-                    (takerTokenAmounts[i], pools, path);
-                makerTokenAmounts[i] = amounts[1];
+                    (takerTokenAmounts[i], pools, path)
+                    returns( uint256[] memory amounts){
+                        makerTokenAmounts[i] = amounts[1];
+                    }catch(bytes memory){}
                 // Break early if there are 0 amounts
                 if (makerTokenAmounts[i] == 0) {
                     break;

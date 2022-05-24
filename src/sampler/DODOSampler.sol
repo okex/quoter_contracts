@@ -70,15 +70,24 @@ contract DODOSampler {
 
         for (uint256 i = 0; i < numSamples; i++) {
             if (opts.sellBase) {
-                makerTokenAmounts[i] = IDODO(opts.pool).querySellBaseToken{
+                try
+                IDODO(opts.pool).querySellBaseToken{
                     gas: DODO_CALL_GAS
-                }(takerTokenAmounts[i]);
+                }(takerTokenAmounts[i])
+                returns(uint256 amount){
+                    makerTokenAmounts[i] = amount;
+                }catch(bytes memory ){
+                }
             } else {
-                makerTokenAmounts[i] = IDODOHelper(opts.helper)
+                try
+                IDODOHelper(opts.helper)
                     .querySellQuoteToken{gas: DODO_CALL_GAS}(
                     opts.pool,
                     takerTokenAmounts[i]
-                );
+                )returns(uint256 amount){
+                    makerTokenAmounts[i] = amount;
+                }catch(bytes memory){
+                }
             }
             // Break early if there are 0 amounts
             if (makerTokenAmounts[i] == 0) {

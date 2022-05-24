@@ -65,7 +65,7 @@ contract UniswapV3Sampler {
         uint24 fee = opts.pool.fee();
         for (uint256 i = 0; i < takerTokenAmounts.length; ++i) {
             // Pick the best result from all the paths.
-            (uint256 topBuyAmount, , ,) = opts.quoter.quoteExactInputSingle{gas: QUOTE_GAS}(
+            try opts.quoter.quoteExactInputSingle{gas: QUOTE_GAS}(
                 IUniswapV3Quoter.QuoteExactInputSingleParams({
                         tokenIn: takerToken,
                         tokenOut: makerToken,
@@ -73,12 +73,13 @@ contract UniswapV3Sampler {
                         amountIn: takerTokenAmounts[i],
                         sqrtPriceLimitX96: 0
                     })
-            );
+            )returns(uint256 amount, uint160, uint32, uint256){
+                makerTokenAmounts[i] = amount;
+            }catch(bytes memory){}
             // Break early if we can't complete the buys.
-            if (topBuyAmount == 0) {
+            if (makerTokenAmounts[i] == 0) {
                 break;
             }
-            makerTokenAmounts[i] = topBuyAmount;
         }
     }
 }
